@@ -1,0 +1,33 @@
+﻿<h3>SZipCodes</h3>
+
+@code {
+
+}
+@using Motorkontor.Data
+@using Motorkontor.Services
+@inherits OwningComponentBase<ZipcodeService>
+
+<select @bind="selectedId" @onmouseup="@(() => OnClick.InvokeAsync(selectedId))">
+    <option value="0">-- Select Zipcode --</option>
+    @foreach (var item in ZipCodes)
+    {
+        <option value=@item.ZipcodeId>@item.ZipcodeName</option>
+    }
+</select>
+
+@code {
+    List<ZipCode> ZipCodes;
+
+
+    int selectedId { get; set; }
+
+    protected override void OnInitialized()
+    {
+        ZipCodes = Service.GetZipCodes();
+
+    }
+
+    [Parameter] public EventCallback<int> OnClick { get; set; }
+
+
+}

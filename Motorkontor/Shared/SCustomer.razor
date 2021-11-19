@@ -1,0 +1,132 @@
+﻿@using Motorkontor.Data
+@using Motorkontor.Services
+@inherits OwningComponentBase<CustomerService>
+
+<button class="btn-primary" @onclick="ShowPopup">Add New Customer Record</button>
+
+@if (popup)
+{
+    <div class="modal" tabindex="-1" style="display:block">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Customer Table</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close" @onclick="ClosePopup"></button>
+                </div>
+                <EditForm Model="CustomerIns" OnValidSubmit="CustomerInsert">
+                    <div class="modal-body">
+                        <table border="1">
+                            <tr>
+                                <td>First Name</td>
+                                <td><input type="text" placeholder="Enter your first name" @bind="CustomerIns.CustomerFirstName" /></td>
+                                <td></td>
+                            </tr>
+
+                            <tr>
+                                <td>Last Name</td>
+                                <td><input type="text" placeholder="Enter your first name" @bind="CustomerIns.CustomerLastName" /></td>
+                                <td></td>
+                            </tr>
+
+                            <tr>
+                                <td>Zip code</td>
+                                <td><input disabled type="text" placeholder="Enter Zip Code Id" @bind="CustomerIns.AddressId" /></td>
+                                <td><SZipCodes OnClick="ClickHandler" /></td>
+                            </tr>
+
+                        </table>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="submit" class="btn btn-primary" @onclick="ClosePopup">Save changes</button>
+                    </div>
+                </EditForm>
+            </div>
+        </div>
+    </div>
+}
+
+<table class="table">
+    <tr>
+        <th>Customer Id</th>
+        <th>Customer First Name</th>
+        <th>Customer Last Name</th>
+        <th>Adress Id</th>
+        <th>Create Date</th>
+    </tr>
+    @foreach (var item in DisplayData)
+    {
+        <tr>
+            <td>@item.CustomerId</td>
+            <td>@item.CustomerFirstName</td>
+            <td>@item.CustomerLastName</td>
+            <td>@item.AddressId</td>
+            <td>@item.CreateDate</td>
+            <td><button class="btn-info" @onclick="(() => EditCustomer(item))">Edit</button></td>
+            <td><button class="btn-danger" @onclick="(() => DeleteCustomer(item))">Delete</button></td>
+        </tr>
+    }
+</table>
+<br />
+<p>Entered Address: @Aid</p>
+
+
+@code {
+    int Aid = 0;
+
+    void ClickHandler(int aid)
+    {
+        Aid = aid;
+
+        CustomerIns.AddressId = Aid; ;
+    }
+    List<Customer>
+        DisplayData;
+    Customer CustomerIns = new Customer();
+    bool popup = false;
+
+    void ShowPopup()
+    {
+        popup = true;
+    }
+
+    void ClosePopup()
+    {
+        popup = false;
+    }
+
+    protected override void OnInitialized()
+    {
+        DisplayData = Service.GetCustomers();
+    }
+
+    void CustomerInsert()
+    {
+        var Objupdate = false;
+        if (CustomerIns.CustomerId > 0)
+        {
+            Objupdate = Service.UpdateCustomers(CustomerIns);
+            popup = false;
+        }
+        else
+        {
+            CustomerIns.CustomerId = 0;
+            Service.AddCustomer(CustomerIns);
+        }
+
+        DisplayData = Service.GetCustomers();
+
+    }
+    void EditCustomer(Customer ecobj)
+    {
+        CustomerIns = ecobj;
+       
+        popup = true;
+    }
+
+    void DeleteCustomer(Customer ecobj)
+    {
+        Service.DeleteCustomer(ecobj);
+        DisplayData.Clear();
+        DisplayData = Service.GetCustomers();
+    }
+}

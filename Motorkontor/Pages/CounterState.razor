@@ -1,0 +1,8 @@
+﻿@page "/counterstate"
+@using Motorkontor.Services
+@inject CounterStatesService Svc
+
+
+<p> Currenr count :@Svc.Count</p>
+
+<button class="btn btn-primary" @onclick="Svc.Increment">Save</button>

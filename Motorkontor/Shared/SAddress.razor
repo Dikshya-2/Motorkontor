@@ -1,0 +1,122 @@
+﻿@using Motorkontor.Data
+@using Motorkontor.Services
+@inherits OwningComponentBase<AddressService>
+
+<button class="btn-primary" @onclick="ShowPopup">Add New Address Record</button>
+
+@if (popup)
+{
+<div class="modal" tabindex="-1" style="display:block">
+    <a href="C:\Users\Tec\source\repos\Motorkontor\Motorkontor\Shared\SAddress.razor">C:\Users\Tec\source\repos\Motorkontor\Motorkontor\Shared\SAddress.razor</a>
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Address Table</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close" @onclick="ClosePopup"></button>
+            </div>
+            <EditForm Model="AddressInsert" OnValidSubmit="InsertAddress">
+                <div class="modal-body">
+                    <table border="1">
+                        <tr>
+                            <td>Street And No</td>
+                            <td><input type="text" placeholder="Enter Street And Number" @bind="AddressInsert.StreetAndNo" /></td>
+                            <td></td>
+                        </tr>
+                        <tr>
+                            <td>Zip code</td>
+                            <td><input disabled type="text" placeholder="Enter Zip Code Id" @bind="AddressInsert.ZipcodeId" /></td>
+                            <td><SZipCodes OnClick="ClickHandler" /></td>
+                        </tr>
+                    </table>
+                </div>
+                <div class="modal-footer">
+                    <button type="submit" class="btn btn-primary" @onclick="ClosePopup">Save changes</button>
+                </div>
+            </EditForm>
+        </div>
+    </div>
+</div>
+}
+
+<table class="table">
+    <tr>
+        <th>Address Id</th>
+        <th>Street And Number</th>
+        <th>Zipcode Id</th>
+        <th>Create Date</th>
+    </tr>
+    @foreach (var item in DisplayData)
+    {
+        <tr>
+            <td>@item.AdressId</td>
+            <td>@item.StreetAndNo</td>
+            <td>@item.ZipcodeId</td>
+            <td>@item.CreateDate</td>
+            <td><button class="btn-info" @onclick="(() => EditAddress(item))">Edit</button></td>
+            <td><button class="btn-danger" @onclick="(() => DeleteAddress(item))">Delete</button></td>
+        </tr>
+    }
+</table>
+<br />
+<p>Entered Zipcode: @zipId</p>
+
+
+@code {
+        int zipId = 0;
+
+        void ClickHandler(int zid)
+        {
+            zipId = zid;
+            AddressInsert.ZipcodeId = zid;
+        }
+        List<Address> DisplayData;
+        Address AddressInsert = new Address();
+        bool popup = false;
+
+        void ShowPopup()
+        {
+            popup = true;
+        }
+
+        void ClosePopup()
+        {
+            popup = false;
+        }
+
+    protected override void OnInitialized()
+    {
+        DisplayData = Service.GetAddresses();
+    }
+
+    void InsertAddress()
+    {
+        var Objupdate = false;
+        if (AddressInsert.AdressId > 0)
+        {
+            Objupdate = Service.UpdateAddress(AddressInsert);
+            popup = false;
+        }
+        else
+        {
+            AddressInsert.AdressId = 0;
+            Service.AddAddress(AddressInsert);
+        }
+
+        DisplayData = Service.GetAddresses();
+
+    }
+    void EditAddress(Address ecobj)
+    {
+        AddressInsert = ecobj;
+        popup = true;
+    }
+
+    void DeleteAddress(Address ecobj)
+    {
+        Service.DeleteAddress(ecobj);
+        DisplayData.Clear();
+        DisplayData = Service.GetAddresses();
+    }
+}
+
+
